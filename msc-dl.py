@@ -31,8 +31,9 @@ def get_songs_list(file):
 def get_url_list(songs):
     urls = []
     for term in songs:
-        print("Getting URL for", sanitize_line(term))
+        print("Getting URL for {}: ".format(sanitize_line(term)), end='')
         video_url = YOUTUBE_BASE_URL + get_video_watch_url(term)
+        print(video_url)
         urls.append(video_url)
     return urls
 

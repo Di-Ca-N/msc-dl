@@ -1,9 +1,9 @@
-# Audio Downloader
+# msc-dl
 
-Command line interface to download only audio from Youtube videos. It gets (from a file) a list of search terms and downloads the audio of first the video retrieved by a youtube search. 
+Command line interface to download only audio from Youtube videos. It gets (from a file) a list of search terms and downloads the audio of the first video retrieved by a youtube search. 
 
 
-## Instalation
+## Installation
 1. Clone or download repository
 1. Run <code> pip install requirements.txt</code>
 
