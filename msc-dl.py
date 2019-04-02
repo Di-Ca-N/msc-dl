@@ -1,25 +1,16 @@
 import sys
 import os
 import requests
+import bs4
 import youtube_dl
-
-from credentials import API_KEYS
 
 
 DOWNLOAD_DIR_NAME = 'Songs'
 
-
-YOUTUBE_API_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search?part=id&q={}&type=video"
-
-if API_KEYS["youtube"]:
-    YOUTUBE_API_SEARCH_URL += "&key=" + API_KEYS["youtube"]
-
-else:
-    print("""
-===========================================================================================
-WARNING: Running without YouTube API Key. May cause trouble when downloading multiple files
-===========================================================================================
-""")
+SEARCH_SOURCES = {
+    "YOUTUBE_BASE": "https://www.youtube.com/results?search_query={}",
+    "YOUTUBE_API": "https://www.googleapis.com/youtube/v3/search?part=id&q={}&type=video&key=",
+}
 
 
 def main():
@@ -29,6 +20,7 @@ def main():
     with open(file_path, 'r') as file:
         songs = get_songs_list(file)
         ids = get_ids_list(songs)
+        print(ids)
         download_songs(ids, songs)
 
 
@@ -43,8 +35,9 @@ def get_songs_list(file):
 
 def get_ids_list(songs):
     ids = []
+
     for term in songs:
-        print("Getting ID for {}: ".format(sanitize_line(term)))
+        print("Getting ID for \"{}\"".format(sanitize_line(term)))
         video_id = get_video_id(term)
         ids.append(video_id)
     return ids
@@ -56,19 +49,34 @@ def sanitize_line(line):
 
 def get_video_id(term):
     try:
-        return get_id_from_youtube_api(term)
+        video_id = get_id_from_youtube_api(term)
 
-    except KeyError:
-        raise Exception("Cant get video ID from YouTube API. Check your API-Key or add one, if not exists")
+    except (AssertionError, ImportError, KeyError, ConnectionError):
+        video_id = get_id_from_youtube_scrapping(term)
 
-    except ConnectionError:
-        raise ConnectionError("Check your internet connection")
+    return video_id
 
 
 def get_id_from_youtube_api(term):
-    response = requests.get(YOUTUBE_API_SEARCH_URL.format(term))
+    from credentials import API_KEYS
+    assert API_KEYS["youtube"] == ""
+    search_url = SEARCH_SOURCES["YOUTUBE_API"] + API_KEYS["youtube"]
+
+    response = requests.get(search_url.format(term))
     json_response = response.json()
+
+    # First video id from youtube api response
     video_id = json_response['items'][0]['id']['videoId']
+    return video_id
+
+
+def get_id_from_youtube_scrapping(term):
+    search_url = SEARCH_SOURCES["YOUTUBE_BASE"]
+    response = requests.get(search_url.format(term))
+    scrapper = bs4.BeautifulSoup(response.content, 'html.parser')
+
+    # Finding id of the first result video in page (no Ads)
+    video_id = scrapper.find("div", {"data-context-item-id": True, "data-ad-impressions": False}).get("data-context-item-id")
     return video_id
 
 
@@ -107,7 +115,10 @@ def get_ytd_options(filename=None):
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-        }]
+        },
+            {
+                'key': 'FFmpegMetadata',
+            }]
     }
 
 
