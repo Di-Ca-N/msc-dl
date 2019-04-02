@@ -6,8 +6,11 @@ Command line interface to download only audio from Youtube videos. It gets (from
 ## Installation
 1. Clone or download repository
 1. Run <code> pip install requirements.txt</code>
+1. (Optional) Create <code>credentials.py</code> file on the software root directory, with this structure:<br><code>API_KEYS = {<br>"youtube": "your_youtube_API_key"<br>}</code>
 
-Obs: For this software to work you'll need [Python3](https://www.python.org/) and [ffmpeg](https://www.ffmpeg.org/download.html) already installed
+Warnings: 
+- For this software to work you'll need [Python3](https://www.python.org/) and [ffmpeg](https://www.ffmpeg.org/download.html) already installed
+- Without the Youtube API key, there's a low daily request limit. You can get the Youtube API Key registering a project in Google Developers Console and enabling the Youtube API
 
 ## How to use
 1. Create a <code>_filename_.txt</code> file
