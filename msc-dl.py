@@ -18,10 +18,9 @@ def main():
     file_path = args[1]
 
     with open(file_path, 'r') as file:
-        songs = get_songs_list(file)
-        ids = get_ids_list(songs)
-        print(ids)
-        download_songs(ids, songs)
+        songs_list = get_songs_list(file)
+        id_list = get_ids_list(songs_list)
+        download_songs(id_list, songs_list)
 
 
 def get_songs_list(file):
@@ -44,7 +43,7 @@ def get_ids_list(songs):
 
 
 def sanitize_line(line):
-    return line.rstrip("\n")
+    return line.strip()
 
 
 def get_video_id(term):
@@ -76,7 +75,8 @@ def get_id_from_youtube_scrapping(term):
     scrapper = bs4.BeautifulSoup(response.content, 'html.parser')
 
     # Finding id of the first result video in page (no Ads)
-    video_id = scrapper.find("div", {"data-context-item-id": True, "data-ad-impressions": False}).get("data-context-item-id")
+    video_id = scrapper.find("div", {"data-context-item-id": True,
+                                     "data-ad-impressions": False}).get("data-context-item-id")
     return video_id
 
 
@@ -94,11 +94,12 @@ def download_songs(id_list, filenames):
 
 def get_ytd_options(filename=None):
     class YTDCustomLogger:
+        @staticmethod
+        def error(msg):
+            print(msg)
+
         def warning(self, msg):
             pass
-
-        def error(self, msg):
-            print(msg)
 
         def debug(self, msg):
             pass
@@ -107,7 +108,7 @@ def get_ytd_options(filename=None):
         if data['status'] == 'finished':
             print("{}: Download Done!".format(filename))
 
-    return {
+    options = {
         'format': 'bestaudio/best',
         'outtmpl': os.path.join(os.getcwd(), DOWNLOAD_DIR_NAME, filename + ".%(ext)s"),
         'logger': YTDCustomLogger(),
@@ -115,11 +116,13 @@ def get_ytd_options(filename=None):
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
-        },
+            },
             {
                 'key': 'FFmpegMetadata',
             }]
     }
+
+    return options
 
 
 if __name__ == '__main__':
