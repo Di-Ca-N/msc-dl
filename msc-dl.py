@@ -1,9 +1,8 @@
-import sys
 import os
 import requests
 import bs4
 import youtube_dl
-
+import argparse
 
 DOWNLOAD_DIR_NAME = 'Songs'
 
@@ -14,16 +13,25 @@ SEARCH_SOURCES = {
 
 
 def main():
-    args = sys.argv
-    file_path = args[1]
+    parser = get_parser()
+    arguments = parser.parse_args()
+
+    file_path = arguments.file_path
 
     with open(file_path, 'r') as file:
-        songs_list = get_songs_list(file)
+        songs_list = get_songs_from_file(file)
         id_list = get_ids_list(songs_list)
         download_songs(id_list, songs_list)
 
 
-def get_songs_list(file):
+def get_parser():
+    parser = argparse.ArgumentParser(description="A command line helper for download audio")
+    parser.add_argument('file_path', help="Path to the text file from where the songs will be imported")
+
+    return parser
+
+
+def get_songs_from_file(file):
     songs = []
     for line in file:
         if sanitize_line(line):
@@ -113,13 +121,15 @@ def get_ytd_options(filename=None):
         'outtmpl': os.path.join(os.getcwd(), DOWNLOAD_DIR_NAME, filename + ".%(ext)s"),
         'logger': YTDCustomLogger(),
         'progress_hooks': [custom_hook],
-        'postprocessors': [{
+        'postprocessors': [
+            {
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             },
             {
                 'key': 'FFmpegMetadata',
-            }]
+            }
+        ]
     }
 
     return options

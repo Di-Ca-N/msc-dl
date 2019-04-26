@@ -4,6 +4,7 @@
 # Test Files
 Songs/
 list.txt
+TEST-*.*
 
 # Credential files
 credentials.py
