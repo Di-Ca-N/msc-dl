@@ -1,4 +1,5 @@
 # msc-dl
+NOTE: This repository is archived. Similat funcionalities can be obtained using [youtube-dl](https://youtube-dl.org/).
 
 Command line interface to download only audio from Youtube videos. It gets (from a file) a list of search terms and downloads the audio of the first video retrieved by a youtube search. 
 
